@@ -1,0 +1,4 @@
+# This file records the default command-line settings used by scripts/run_selfsup.sh.
+# Edit paths, intrinsics, and synchronization settings before running.
+DATA_ROOT=/path/to/london_plane_rgbd_imu
+OUT_DIR=runs/selfsup_london_plane

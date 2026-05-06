@@ -1,0 +1,10 @@
+torch>=2.1
+torchvision>=0.16
+numpy>=1.23
+opencv-python>=4.8
+tqdm>=4.65
+timm>=0.9
+safetensors>=0.4
+ultralytics>=8.0
+matplotlib>=3.7
+scikit-image>=0.21

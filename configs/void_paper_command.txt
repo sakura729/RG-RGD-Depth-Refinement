@@ -1,0 +1,4 @@
+# This file records the default command-line settings used by scripts/run_void.sh.
+# Edit paths and hardware-related values before running.
+VOID_ROOT=/path/to/void_release/void_1500
+OUT_DIR=runs/void_rgrgd
