@@ -1,5 +1,7 @@
 # RG-RGD: Benefit-Driven Self-Supervised Depth Refinement
 
+> **Manuscript status:** This code is directly associated with a manuscript submitted to *The Visual Computer*. If you use this repository, please cite the corresponding manuscript.
+
 This repository contains the open-source implementation for the manuscript:
 
 **Benefit-Driven Self-Supervised Depth Refinement for Precise Small-Target 3D Localization in Robotic Vision**
