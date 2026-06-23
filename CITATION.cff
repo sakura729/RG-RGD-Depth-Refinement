@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: "RG-RGD: Real-Time Small-Target RGB-D Depth Refinement for Robotic Laser Ablation"
+message: "If you use this code, please cite the associated Robotics manuscript."
+type: software
+authors:
+  - family-names: Si
+    given-names: Bowen
+  - family-names: Ning
+    given-names: Dayong
+  - family-names: Hou
+    given-names: Jiaoyi
+  - family-names: Gong
+    given-names: Yongjun
+  - family-names: Yi
+    given-names: Ming
+  - family-names: Zhang
+    given-names: Fengrui
+  - family-names: Liu
+    given-names: Zhilei
+year: 2026
+license: MIT
+repository-code: "https://github.com/sakura729/RG-RGD-Depth-Refinement"
+abstract: "Reference implementation for a Robotics manuscript on real-time small-target RGB-D depth refinement for robotic laser ablation."

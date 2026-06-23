@@ -16,6 +16,7 @@ python tools/train_void_supervised.py \
   --batch_size 6 \
   --lr 2.8e-4 \
   --lr_vit 1.0e-5 \
+  --vit_no_pretrained \
   --lr_warmup_epochs 2 \
   --lr_min_ratio 0.05 \
   --wd 1e-4 \
@@ -49,7 +50,17 @@ You can run the same default configuration through the wrapper script:
 bash scripts/run_void.sh /path/to/void_release/void_1500 runs/void_rgrgd
 ```
 
-Adjust `--batch_size` and `--num_workers` for your GPU/CPU memory.
+Adjust `--batch_size` and `--num_workers` for your GPU/CPU memory. The default command uses `--vit_no_pretrained` so the run does not depend on a network download or a local timm weight cache.
+
+## Optional local ViT weights
+
+If local ViT weights are used, pass them explicitly and report the setting:
+
+```bash
+--vit_local_weights /path/to/weights.safetensors
+```
+
+Do not mix this setting with the default paper-aligned run unless it is clearly labeled as a variant.
 
 ## Optional ablation: teacher-mask distillation
 

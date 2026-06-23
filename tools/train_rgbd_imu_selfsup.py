@@ -70,10 +70,7 @@ try:
 except Exception:
     timm = None
 
-try:
-    from ultralytics import YOLO
-except Exception:
-    YOLO = None
+YOLO = None
 
 # -------------------------
 # ViT RGB Stem (global semantics, upsampled to full-res)
@@ -1422,8 +1419,13 @@ class YoloMaskGenerator(nn.Module):
         device: str = "cuda",
     ):
         super().__init__()
+        global YOLO
         if YOLO is None:
-            raise ImportError("ultralytics is required for YOLO. Install with: pip install ultralytics")
+            try:
+                from ultralytics import YOLO as _YOLO
+            except Exception as e:
+                raise ImportError("ultralytics is required for YOLO. Install with: pip install -r requirements-optional.txt") from e
+            YOLO = _YOLO
         self.det = YOLO(ckpt)
         self.conf = float(conf)
         self.iou = float(iou)
@@ -2425,9 +2427,6 @@ class RGRGDDepthRefiner(nn.Module):
 
 
 
-# Backward-compatible alias for older internal checkpoints/scripts.
-SODR_ViT_YOLO_Transformer = RGRGDDepthRefiner
-
 # -----------------------------------------------------------------------------
 # RGB-D/IMU self-supervised training utilities
 # -----------------------------------------------------------------------------
@@ -3347,7 +3346,7 @@ def main():
     # YOLO ROI (online txt)
     ap.add_argument("--yolo_label_dir", type=str, default="", help="Folder containing YOLO txt labels (same stem as RGB).")
     ap.add_argument("--yolo_classes", type=str, default="", help="Optional: class ids to keep, e.g. '0' or '0,1'. Empty=all.")
-    ap.add_argument("--yolo_expand", type=float, default=0.0, help="Expand bbox w/h by this ratio (e.g. 0.1 => +10%).")
+    ap.add_argument("--yolo_expand", type=float, default=0.0, help="Expand bbox w/h by this ratio (e.g. 0.1 means plus ten percent).")
     ap.add_argument("--yolo_bg_alpha", type=float, default=0.10, help="Weight outside boxes (0..1). Inside boxes weight=1.")
 
     # train/val split

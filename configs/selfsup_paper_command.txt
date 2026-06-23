@@ -1,4 +1,34 @@
-# This file records the default command-line settings used by scripts/run_selfsup.sh.
-# Edit paths, intrinsics, and synchronization settings before running.
+# Paper-aligned RGB-D/IMU self-supervised command template.
+# Replace DATA_ROOT and OUT_DIR before running.
+
 DATA_ROOT=/path/to/london_plane_rgbd_imu
 OUT_DIR=runs/selfsup_london_plane
+
+bash scripts/run_selfsup.sh "$DATA_ROOT" "$OUT_DIR"
+
+# Equivalent expanded command:
+python tools/train_rgbd_imu_selfsup.py \
+  --out_dir "$OUT_DIR" \
+  --data_root "$DATA_ROOT" \
+  --img_h 320 --img_w 320 \
+  --depth_scale 1000 \
+  --imu_gyro_unit rad \
+  --frame_stride 2 --pair_mode sliding --max_pair_gap_us 600000 \
+  --use_sd_fill --pose_imu_rot \
+  --preprocess crop_square \
+  --max_depth 10.0 \
+  --epochs 30 --batch_size 1 --lr 1.5e-5 \
+  --weight_decay 5e-5 \
+  --residual_mode --res_alpha 1.0 --delta_max 1.0 \
+  --w_photo 1.0 \
+  --w_geo 1.0 --geo_photo_beta 2.0 \
+  --w_warp 0.8 \
+  --meas_sparse --meas_keep_prob 0.7 --meas_max_frac 0.25 \
+  --w_meas 0.10 --meas_align scale --meas_loss_type huber --huber_delta 0.10 \
+  --w_smooth 0.001 \
+  --occ_thresh 0.10 \
+  --obs_keep_prob 0.5 --obs_max_frac 0.5 \
+  --benefit_use_photo --benefit_photo_w 0.5 \
+  --val_ratio 0.2 --split_mode scene \
+  --vit_name vit_small_patch16_224_dino \
+  --vis_every 50 --vis_max_per_epoch 10 --vis_split both --vis_save_npz

@@ -1,6 +1,8 @@
-# Data preparation
+# Data Preparation
 
-## VOID benchmark
+This repository does not redistribute datasets. Prepare the datasets locally and pass the dataset paths to the released scripts.
+
+## VOID Benchmark
 
 `tools/train_void_supervised.py` accepts `--root` pointing to a VOID density folder, for example:
 
@@ -33,7 +35,7 @@ void_1500/
       ground_truth/
 ```
 
-Depth values are expected to be stored as unsigned 16-bit PNGs. Use `--depth_scale` to convert raw integer values to meters. The default for VOID is `256.0`.
+Depth values are expected to be unsigned 16-bit PNGs. Use `--depth_scale` to convert raw integer values to meters. The default for VOID is `256.0`.
 
 Optional teacher masks can be placed in a sibling folder of `image/`, for example:
 
@@ -43,15 +45,15 @@ Optional teacher masks can be placed in a sibling folder of `image/`, for exampl
   yolo_mask_v2/
 ```
 
-Then run with:
+Enable this path only for ablation:
 
 ```bash
 --teacher_enable --teacher_subdir yolo_mask_v2
 ```
 
-## RGB-D/IMU self-supervised dataset
+## RGB-D/IMU Self-Supervised Dataset
 
-The self-supervised script accepts either a root directory containing sequences or explicit directories.
+The self-supervised script accepts either a root directory containing multiple sequences or explicit single-sequence directories.
 
 Recommended root layout:
 
@@ -75,9 +77,18 @@ Alternative explicit arguments:
 --imu_csv /path/to/imu.csv
 ```
 
-### Important notes
+The expected `imu.csv` columns are:
+
+```text
+timestamp_us, ax, ay, az, gx, gy, gz
+```
+
+where gyroscope values are interpreted according to `--imu_gyro_unit` (`rad` or `deg`).
+
+## Important Notes
 
 - RGB, depth, and IMU timestamps should be synchronized or close enough for frame pairing.
 - If depth is captured in a different camera frame, perform depth-to-color registration before training.
 - Use `--depth_scale 1000` for millimeter depth PNGs and `--depth_scale 256` for VOID-style depth PNGs.
-- Use `--imu_gyro_unit rad` if gyroscope values are in rad/s and `--imu_gyro_unit deg` if they are in deg/s.
+- Record camera intrinsics when `--intrinsics_mode manual` is used.
+- Private London plane sequences are available from the corresponding author upon reasonable request, subject to institutional approval.

@@ -14,6 +14,7 @@ python tools/train_void_supervised.py \
   --batch_size 6 \
   --lr 2.8e-4 \
   --lr_vit 1.0e-5 \
+  --vit_no_pretrained \
   --lr_warmup_epochs 2 \
   --lr_min_ratio 0.05 \
   --wd 1e-4 \
