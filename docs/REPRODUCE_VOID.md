@@ -1,9 +1,8 @@
-# Reproducing the VOID benchmark experiment
+# Reproducing the VOID Benchmark Experiment
 
-This is the default command used by `scripts/run_void.sh` for reproducing the public VOID supervised benchmark experiment.
-It does **not** enable optional teacher-mask distillation, so no teacher-mask folder is required for the default reproduction path.
+This is the default command used by `scripts/run_void.sh` for reproducing the public VOID supervised benchmark experiment. It does not enable optional teacher-mask distillation, so no teacher-mask folder is required for the default reproduction path.
 
-## Default reproduction command
+## Default Reproduction Command
 
 ```bash
 python tools/train_void_supervised.py \
@@ -44,7 +43,7 @@ python tools/train_void_supervised.py \
   --num_workers 8
 ```
 
-You can run the same default configuration through the wrapper script:
+The same configuration can be launched through the wrapper script:
 
 ```bash
 bash scripts/run_void.sh /path/to/void_release/void_1500 runs/void_rgrgd
@@ -52,7 +51,7 @@ bash scripts/run_void.sh /path/to/void_release/void_1500 runs/void_rgrgd
 
 Adjust `--batch_size` and `--num_workers` for the available GPU/CPU memory. The default command uses `--vit_no_pretrained`, so the run does not depend on external ViT-weight downloads.
 
-## Optional local ViT weights
+## Optional Local ViT Weights
 
 If local ViT weights are used, pass them explicitly and report the setting:
 
@@ -62,7 +61,7 @@ If local ViT weights are used, pass them explicitly and report the setting:
 
 Do not mix this setting with the default run unless it is clearly labeled as a variant.
 
-## Optional ablation: teacher-mask distillation
+## Optional Ablation: Teacher-Mask Distillation
 
 Teacher-mask distillation is retained only for ablation and is disabled by default. If teacher masks are prepared, place them in a sibling folder of `image/`, for example:
 
