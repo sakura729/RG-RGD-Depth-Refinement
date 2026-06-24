@@ -1,6 +1,6 @@
-# Reproducing the RGB-D/IMU self-supervised experiment
+# Reproducing the RGB-D/IMU Self-Supervised Experiment
 
-Example command:
+This command runs the RGB-D/IMU self-supervised training path used for the small-target robotic perception study.
 
 ```bash
 python tools/train_rgbd_imu_selfsup.py \
@@ -29,5 +29,25 @@ python tools/train_rgbd_imu_selfsup.py \
   --vit_name vit_small_patch16_224_dino \
   --vis_every 50 --vis_max_per_epoch 10 --vis_split both --vis_save_npz
 ```
+
+The same configuration can be launched through the wrapper script:
+
+```bash
+bash scripts/run_selfsup.sh /path/to/london_plane_rgbd_imu runs/selfsup_london_plane
+```
+
+## Data Requirements
+
+The dataset should follow the structure described in `docs/DATA_PREPARATION.md`. The private London plane RGB-D/IMU sequences are not redistributed in this repository. If these data are unavailable, the script still documents the training path and can be run on a dataset with the same RGB/depth/IMU organization.
+
+## Reporting Requirements
+
+When reporting self-supervised results, record:
+
+- Camera intrinsics and depth-to-RGB registration status.
+- IMU gyroscope unit and camera-IMU extrinsic setting.
+- Pairing policy, frame stride, and maximum frame-pair time gap.
+- Train/validation split mode and random seed.
+- Whether local ViT weights or optional YOLO-label weighting were used.
 
 The self-supervised pipeline is sensitive to synchronization and camera calibration. Verify frame timestamps and intrinsics before reporting results.

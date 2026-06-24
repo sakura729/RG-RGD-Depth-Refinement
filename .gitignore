@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environments
+.env
+.venv/
+venv/
+env/
+conda-meta/
+
+# Training outputs
+runs/
+.release_test_runs/
+checkpoints/
+weights/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.engine
+*.safetensors
+
+# Data
+data/
+datasets/
+void_*/
+london_plane_rgbd_imu/
+
+# Logs and caches
+logs/
+wandb/
+tensorboard/
+*.log
+*.tmp
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

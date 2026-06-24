@@ -38,7 +38,7 @@ Expected data:
     - See docs/DATA_PREPARATION.md for the suggested directory layout.
 
 Notes:
-    - Replace all dataset/model paths with your local paths.
+    - Replace dataset/model paths with local paths before running.
     - Optional local ViT weights can be provided with --vit_local_weights.
     - No private data are included in this repository.
 """
@@ -70,10 +70,7 @@ try:
 except Exception:
     timm = None
 
-try:
-    from ultralytics import YOLO
-except Exception:
-    YOLO = None
+YOLO = None
 
 # -------------------------
 # ViT RGB Stem (global semantics, upsampled to full-res)
@@ -733,7 +730,7 @@ def _resolve_any_existing(void_density_dir: str, p: str) -> str:
         if os.path.isfile(c):
             return c
 
-    # If none exists, return the first candidate for debugging
+    # If no exact density directory is found, return the first candidate for diagnostics.
     return cand[0] if cand else os.path.normpath(os.path.join(void_density_dir, p))
 
 
@@ -1422,8 +1419,13 @@ class YoloMaskGenerator(nn.Module):
         device: str = "cuda",
     ):
         super().__init__()
+        global YOLO
         if YOLO is None:
-            raise ImportError("ultralytics is required for YOLO. Install with: pip install ultralytics")
+            try:
+                from ultralytics import YOLO as _YOLO
+            except Exception as e:
+                raise ImportError("ultralytics is required for YOLO. Install with: pip install -r requirements-optional.txt") from e
+            YOLO = _YOLO
         self.det = YOLO(ckpt)
         self.conf = float(conf)
         self.iou = float(iou)
@@ -1618,7 +1620,7 @@ class UACSPNRefiner(nn.Module):
     """Uncertainty-Aware CSPN-lite refinement (8-neighbor + center, softmax normalized).
 
     Why this exists:
-    - LiteLearnedPropRefiner (your BP module) is already good for global smoothing.
+    - LiteLearnedPropRefiner provides the lightweight propagation step.
     - But small objects / thin structures often need stronger, edge-aware local propagation.
     - This module adds a very light CSPN-like iterative refinement:
         * per-pixel normalized affinities (softmax)
@@ -2425,9 +2427,6 @@ class RGRGDDepthRefiner(nn.Module):
 
 
 
-# Backward-compatible alias for older internal checkpoints/scripts.
-SODR_ViT_YOLO_Transformer = RGRGDDepthRefiner
-
 # -----------------------------------------------------------------------------
 # RGB-D/IMU self-supervised training utilities
 # -----------------------------------------------------------------------------
@@ -2518,7 +2517,7 @@ class IMUCache:
 def parse_imu_R_g2c(values: Optional[List[float]]) -> np.ndarray:
     """Return 3x3 float32 row-major rotation matrix Gyro->Color."""
     if values is None or len(values) == 0:
-        # Default from your exported Gyro_to_Color R (row-major):
+        # Default Gyro-to-Color rotation matrix in row-major order:
         return np.array([
             [0.9998027682304382, -0.019803086295723915, -0.0014865585835650563],
             [0.019801009446382523, 0.9998029470443726, -0.0013990221777930856],
@@ -3347,7 +3346,7 @@ def main():
     # YOLO ROI (online txt)
     ap.add_argument("--yolo_label_dir", type=str, default="", help="Folder containing YOLO txt labels (same stem as RGB).")
     ap.add_argument("--yolo_classes", type=str, default="", help="Optional: class ids to keep, e.g. '0' or '0,1'. Empty=all.")
-    ap.add_argument("--yolo_expand", type=float, default=0.0, help="Expand bbox w/h by this ratio (e.g. 0.1 => +10%).")
+    ap.add_argument("--yolo_expand", type=float, default=0.0, help="Expand bbox w/h by this ratio (e.g. 0.1 means plus ten percent).")
     ap.add_argument("--yolo_bg_alpha", type=float, default=0.10, help="Weight outside boxes (0..1). Inside boxes weight=1.")
 
     # train/val split
@@ -3397,7 +3396,7 @@ def main():
     ap.add_argument("--obs_max_frac", type=float, default=1.0)
     ap.add_argument("--obs_subsample_when_dense", action="store_true")
 
-    # residual refinement option (keep compatible with your checkpoints)
+    # Residual refinement option kept for checkpoint compatibility.
     ap.add_argument("--residual_mode", action="store_true")
     ap.add_argument("--res_alpha", type=float, default=0.1)
     ap.add_argument("--delta_max", type=float, default=0.5)
@@ -3693,7 +3692,7 @@ def main():
                  m01: torch.Tensor, m10: torch.Tensor,
                  photo_01: torch.Tensor, photo_10: torch.Tensor,
                  geo01: torch.Tensor, geo10: torch.Tensor):
-        """Save a compact set of visuals for paper/debug."""
+        """Save a compact set of visual diagnostics."""
         base = os.path.join(str(args.out_dir), "vis", f"ep{ep:03d}", split_name)
         os.makedirs(base, exist_ok=True)
 
@@ -4108,7 +4107,7 @@ def main():
 
                 total = float(args.w_photo) * photo_loss + float(args.w_geo) * geo_loss + float(args.w_warp) * warp_loss + float(args.w_meas) * meas_loss + float(args.w_smooth) * smooth_loss + reg_align + float(getattr(args, 'w_benefit', 0.0)) * benefit_loss + float(getattr(args, 'w_mass', 0.0)) * loss_mass + float(getattr(args, 'w_edgetv', 0.0)) * loss_edgetv + float(getattr(args, 'w_scale_bfs', 0.0)) * loss_scale + float(getattr(args, 'w_mask_coh', 0.0)) * loss_coh
 
-                # visualization (optional, for paper/debug)
+                # Optional visualization for inspection.
                 if int(args.vis_every) > 0 and saved_vis < int(args.vis_max_per_epoch):
                     want = (args.vis_split == "both") or (train and args.vis_split == "train") or ((not train) and args.vis_split == "val")
                     if want and ((bi - 1) % int(args.vis_every) == 0):

@@ -20,7 +20,7 @@ Example:
         --ema_enable --ema_decay 0.9999 --ema_eval
 
 Notes:
-    - Replace all dataset/model paths with your local paths.
+    - Replace dataset/model paths with local paths before running.
     - Optional local ViT weights can be provided with --vit_local_weights.
     - The script uses public datasets only; no private data are included.
 """
@@ -51,10 +51,7 @@ try:
 except Exception:
     timm = None
 
-try:
-    from ultralytics import YOLO
-except Exception:
-    YOLO = None
+YOLO = None
 
 # -------------------------
 # ViT RGB Stem (global semantics, upsampled to full-res)
@@ -681,7 +678,7 @@ def _resolve_any_existing(void_density_dir: str, p: str) -> str:
         if os.path.isfile(c):
             return c
 
-    # If none exists, return the first candidate for debugging
+    # If no exact density directory is found, return the first candidate for diagnostics.
     return cand[0] if cand else os.path.normpath(os.path.join(void_density_dir, p))
 
 
@@ -1342,8 +1339,13 @@ class YoloMaskGenerator(nn.Module):
         device: str = "cuda",
     ):
         super().__init__()
+        global YOLO
         if YOLO is None:
-            raise ImportError("ultralytics is required for YOLO. Install with: pip install ultralytics")
+            try:
+                from ultralytics import YOLO as _YOLO
+            except Exception as e:
+                raise ImportError("ultralytics is required for YOLO. Install with: pip install -r requirements-optional.txt") from e
+            YOLO = _YOLO
         self.det = YOLO(ckpt)
         self.conf = float(conf)
         self.iou = float(iou)
@@ -1538,7 +1540,7 @@ class UACSPNRefiner(nn.Module):
     """Uncertainty-Aware CSPN-lite refinement (8-neighbor + center, softmax normalized).
 
     Why this exists:
-    - LiteLearnedPropRefiner (your BP module) is already good for global smoothing.
+    - LiteLearnedPropRefiner provides the lightweight propagation step.
     - But small objects / thin structures often need stronger, edge-aware local propagation.
     - This module adds a very light CSPN-like iterative refinement:
         * per-pixel normalized affinities (softmax)
@@ -1965,9 +1967,9 @@ class BFSHead(nn.Module):
 
 
 # -------------------------
-# Full SODR network
+# Full RG-RGD network
 # -------------------------
-class SODR_ViT_YOLO_Transformer(nn.Module):
+class RGRGDDepthRefiner(nn.Module):
     def __init__(
         self,
         base=32,
@@ -2317,7 +2319,7 @@ class SODR_ViT_YOLO_Transformer(nn.Module):
 # -------------------------
 # Loss + distillation + NLL warmup driven by crit.w_nll updated per-epoch
 # -------------------------
-class SODRLoss(nn.Module):
+class RGRGDDepthLoss(nn.Module):
     def __init__(
         self,
         w_smooth=0.01,
@@ -2616,7 +2618,7 @@ def run(args):
             density_dir, "test", debug_show=0
         )
 
-        # Optional caps (useful for quick debugging).
+        # Optional caps for quick local checks.
         # If --max_total > 0, interpret it as a TOTAL budget across train+val, using --val_ratio as the val fraction.
         if args.max_total and args.max_total > 0:
             vr = float(args.val_ratio) if args.val_ratio and args.val_ratio > 0 else 0.0
@@ -2728,7 +2730,7 @@ def run(args):
     dl_va = DataLoader(ds_va, batch_size=1, shuffle=False, num_workers=0, pin_memory=True)
 
     # ---- Model ----
-    model = SODR_ViT_YOLO_Transformer(
+    model = RGRGDDepthRefiner(
         base=args.base,
         patch=args.patch,
         heads=args.heads,
@@ -2774,7 +2776,7 @@ def run(args):
         ema = ModelEMA(model, decay=float(args.ema_decay))
 
     # ---- Loss ----
-    crit = SODRLoss(
+    crit = RGRGDDepthLoss(
         w_smooth=args.w_smooth,
         w_so=args.w_so,
         w_mask_sparse=args.w_mask_sparse,
@@ -2820,7 +2822,7 @@ def run(args):
 
     best = 1e9
     os.makedirs(args.out_dir, exist_ok=True)
-    best_path = os.path.join(args.out_dir, "sodr_vit_yolo_tf_best.pth")
+    best_path = os.path.join(args.out_dir, "rgrgd_void_best.pth")
 
     for ep in range(1, args.epochs + 1):
         # ---- LR schedule (warmup + cosine) ----
@@ -3015,7 +3017,7 @@ def run(args):
             if ema is not None:
                 ckpt["ema"] = ema.ema.state_dict()
             torch.save(ckpt, best_path)
-            msg_best = f"   💾 Saved Best: {best_path} (val_mae_m={best:.4f} | {best*1000:.1f}mm)"
+            msg_best = f"   Saved best: {best_path} (val_mae_m={best:.4f} | {best*1000:.1f}mm)"
             if "mae_roi_m" in val:
                 msg_best += f" | roi(mm)={val['mae_roi_m']*1000:.1f}"
             print(msg_best)
@@ -3024,7 +3026,7 @@ def run(args):
 def build_argparser():
     p = argparse.ArgumentParser()
     p.add_argument("--root", type=str, required=True)
-    p.add_argument("--out_dir", type=str, default="./sodr_vit_yolo_tf_out_opt")
+    p.add_argument("--out_dir", type=str, default="./runs/void_rgrgd")
 
     # split source (important for VOID benchmark protocol)
     p.add_argument(

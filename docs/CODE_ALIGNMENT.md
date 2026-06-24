@@ -1,21 +1,37 @@
-# Code alignment with the manuscript
+# Code Alignment with the Manuscript
 
-This repository provides the official implementation of the experiments described in the manuscript.
+This document maps the main RG-RGD manuscript components to the released code.
 
-## Default reproduction path
+## Default Reproduction Paths
 
-- `scripts/run_void.sh` runs the public VOID supervised benchmark experiment without optional teacher-mask distillation.
-- `scripts/run_selfsup.sh` runs the RGB-D/IMU self-supervised experiment using the benefit-driven BFS-SOFA path.
+- `scripts/run_void.sh` runs the public VOID supervised benchmark experiment.
+- `scripts/run_selfsup.sh` runs the RGB-D/IMU self-supervised experiment used for the small-target robotic perception study.
 
-## Optional utilities
+Both scripts disable optional YOLO-based online masks by default. The default VOID command also uses `--vit_no_pretrained`, so reproduction does not require external ViT-weight downloads.
 
-Some optional utilities remain in the source for ablation/debugging:
+## Component Mapping
 
-- YOLO-based masks can be used as pseudo-mask priors for ablation.
-- Teacher-mask distillation can be enabled in the VOID script for ablation.
+| Manuscript component | Code location |
+| --- | --- |
+| Hybrid RGB-D feature extraction | `ViTSRGBStem`, `rgb_local`, `dep_stem` in `tools/train_*` |
+| Dense depth hint from valid measurements | depth preprocessing and filled-depth input construction in both training scripts |
+| Benefit-driven foveated scale head | `BFSHead` |
+| Small-object focused attention | `SofaCrossAttention` |
+| Self-play benefit supervision | baseline/focused two-pass loop in `tools/train_rgbd_imu_selfsup.py` |
+| Residual-gated depth prediction | `RGRGDDepthRefiner.forward()` |
+| Bayesian measurement fusion | uncertainty heads and variance-weighted fusion in `RGRGDDepthRefiner.forward()` |
+| UACSPN propagation | `LiteLearnedPropRefiner`, `GaussianBPRefiner`, `UACSPNRefiner` |
+| IMU-assisted pose decomposition | `PoseNet`, `IMUCache`, `integrate_gyro_between()` |
+| View-synthesis warping | `warp_src_to_tgt()` |
+| VOID benchmark training/evaluation | `tools/train_void_supervised.py` |
+| RGB-D/IMU self-supervised training | `tools/train_rgbd_imu_selfsup.py` |
 
-These optional paths are disabled in the default reproduction commands so that the released default behavior matches the manuscript's benefit-driven/self-supervised description.
+## Optional Utilities
 
-## Naming note
+Some utilities remain available for ablation studies:
 
-The self-supervised script uses `RGRGDDepthRefiner` as the public model class. A backward-compatible alias, `SODR_ViT_YOLO_Transformer`, is kept only to avoid breaking older internal checkpoints or scripts.
+- YOLO-based masks can be used as pseudo-mask priors when explicitly enabled.
+- Teacher-mask distillation can be enabled for controlled VOID ablations.
+- Local ViT weights can be supplied with `--vit_local_weights`.
+
+These optional paths are disabled in the default reproduction commands. Any result using them should be labeled as a variant rather than as the default run.
