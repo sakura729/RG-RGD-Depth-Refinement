@@ -3,13 +3,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.x-ee4c2c.svg)](https://pytorch.org/)
-[![Paper](https://img.shields.io/badge/Paper-Robotics%20(MDPI)-2ea44f.svg)](#citation)
+[![Paper](https://img.shields.io/badge/Paper-Machines%20(MDPI)-2ea44f.svg)](#citation)
 
 This repository contains the reference implementation for the manuscript:
 
 > RG-RGD: Real-Time Small-Target RGB-D Depth Refinement for Robotic Laser Ablation  
 > Bowen Si, Dayong Ning, Jiaoyi Hou, Yongjun Gong, Ming Yi, Fengrui Zhang, Zhilei Liu  
-> Manuscript submitted to *Robotics* (MDPI), 2026
+> Manuscript submitted to *Machines* (MDPI), 2026
 
 RG-RGD denotes residual-gated RGB-D depth refinement. The released code supports the public VOID benchmark experiment and the RGB-D/IMU self-supervised training pipeline used for the small-target robotic perception study.
 
@@ -173,7 +173,7 @@ Please cite the associated manuscript when using this code:
   title   = {RG-RGD: Real-Time Small-Target RGB-D Depth Refinement for Robotic Laser Ablation},
   author  = {Si, Bowen and Ning, Dayong and Hou, Jiaoyi and Gong, Yongjun and
              Yi, Ming and Zhang, Fengrui and Liu, Zhilei},
-  journal = {Robotics},
+  journal = {Machines},
   year    = {2026},
   note    = {Manuscript under review}
 }
